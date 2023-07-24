@@ -1,6 +1,8 @@
 from django.db import models
 from datetime import date
 
+from django.urls import reverse
+
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
@@ -51,8 +53,13 @@ class Movie(models.Model):
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        return reverse("movie_detail", kwargs={"slug": self.url})
 
-class MovieShots(models.Model):
+
+
+
+class MovieShot(models.Model):
     title = models.CharField(max_length=120)
     description = models.TextField()
     image = models.ImageField(upload_to="movie/shots")
@@ -72,13 +79,13 @@ class RatingStar(models.Model):
 class Rating(models.Model):
     ip = models.CharField(max_length=15)
     star = models.ForeignKey("RatingStar", on_delete=models.CASCADE)
-    movie = models.ForeignKey("Movie", on_delete=models.CharField)
+    movie = models.ForeignKey("Movie", on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.star} -> {self.movie}"
 
 
-class Reviews(models.Model):
+class Review(models.Model):
     email = models.EmailField()
     name = models.CharField(max_length=120)
     text = models.TextField(max_length=5000)

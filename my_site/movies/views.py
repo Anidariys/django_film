@@ -1,3 +1,15 @@
 from django.shortcuts import render
+from django.views.generic import ListView, DetailView
+from django.views.generic.base import View
 
-# Create your views here.
+from .models import Movie
+
+
+class MovieView(ListView):
+    model = Movie
+    queryset = Movie.objects.filter(draft=False)
+
+
+class MoviDeatailView(DetailView):
+    model = Movie
+    slug_field = "url"
