@@ -1,10 +1,20 @@
+from django import forms
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
 from .models import (
     Category, Ganre, Movie, MovieShot,
     Actor, Rating, RatingStar, Review
 )
+
+
+class MovieAdminForm(forms.ModelForm):
+    description = forms.CharField(label="Description", widget=CKEditorUploadingWidget())
+
+    class Meta:
+        model = Movie
+        fields = '__all__'
 
 
 @admin.register(Category)
@@ -17,6 +27,7 @@ class ReviewInLine(admin.TabularInline):
     model = Review
     extra = 1
     readonly_fields = ("name", "email")
+
 
 class MovieShotsIniLine(admin.TabularInline):
     model = MovieShot
@@ -40,6 +51,7 @@ class MovieAdmin(admin.ModelAdmin):
     save_as = True
     list_editable = ("draft", )
     readonly_fields = ("get_image", )
+    form = MovieAdminForm
     fieldsets = (
         (None, {
             "fields": (("title", "tagline"), )
@@ -108,7 +120,6 @@ class MovieShotAdmin(admin.ModelAdmin):
 
 
 admin.site.register(RatingStar)
-
 
 admin.site.site_title = "Django MOVIES"
 admin.site.site_header = "Django MOVIES"
