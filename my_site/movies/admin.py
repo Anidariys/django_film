@@ -50,6 +50,7 @@ class MovieAdmin(admin.ModelAdmin):
     save_on_top = True
     save_as = True
     list_editable = ("draft", )
+    actions = ["publish", "unpublish"]
     readonly_fields = ("get_image", )
     form = MovieAdminForm
     fieldsets = (
@@ -77,6 +78,30 @@ class MovieAdmin(admin.ModelAdmin):
     def get_image(self, obj):
         return mark_safe(f'<img src={obj.poster.url} width="100" hight="118')
 
+    def unpublish(self, request, queryset):
+        row_update = queryset.update(draft=True)
+        if row_update == 1:
+            massage = "1 запис був обновлена"
+        else:
+            massage = f"{row_update} записа було обновлено"
+        self.message_user(request, f"{massage}")
+
+
+    def publish(self, request, queryset):
+        row_update = queryset.update(draft=False)
+        if row_update == 1:
+            massage = "1 запис був обновлена"
+        else:
+            massage = f"{row_update} записа було обновлено"
+        self.message_user(request, f"{massage}")
+
+
+    publish.short_description = "Опублікувати"
+    publish.allowed_permissions = ("change", )
+
+    unpublish.short_description = "Зняти з публікації"
+    unpublish.allowed_permissions = ("change", )
+
     get_image.short_description = "Poster"
 
 
@@ -93,7 +118,7 @@ class GanreAdmin(admin.ModelAdmin):
 
 
 @admin.register(Actor)
-class ActorwAdmin(admin.ModelAdmin):
+class ActorAdmin(admin.ModelAdmin):
     list_display = ("name", "age", "get_image")
     readonly_fields = ("get_image", )
 
