@@ -16,11 +16,14 @@ class Category(models.Model):
 class Actor(models.Model):
     name = models.CharField(max_length=100)
     age = models.PositiveBigIntegerField(default=0)
-    desctiption = models.TextField()
+    description = models.TextField()
     image = models.ImageField(upload_to="movies/actors")
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("actor_detail", kwargs={"slug": self.name})
 
 
 class Ganre(models.Model):
