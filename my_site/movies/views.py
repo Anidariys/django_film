@@ -1,11 +1,13 @@
+from typing import Any, Dict
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView
 from django.views.generic.base import View
 
-from .models import Actor, Movie, Ganre
-from .forms import ReviewForm
+from .models import Actor, Movie, Ganre, Rating
+from .forms import ReviewForm, RatingForm
 
 
 class GanreYear:
@@ -24,6 +26,11 @@ class MovieView(GanreYear, ListView):
 class MoviDeatailView(GanreYear, DetailView):
     model = Movie
     slug_field = "url"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["star_form"] = RatingForm()
+        return context
 
 
 class AddReview(View):
@@ -52,3 +59,37 @@ class FilterMoviesView(GanreYear, ListView):
             Q(ganres__in=self.request.GET.getlist("ganre"))
         )
         return queryset
+
+
+class AddStarRating(View):
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+    def post(self, request):
+        form = RatingForm(request.POST)
+        if form.is_valid():
+            Rating.objects.update_or_create(
+                ip=self.get_client_ip(request),
+                movie_id=int(request.POST.get("movie")),
+                defaults={'star_id': int(request.POST.get("star"))}
+            )
+            return HttpResponse(status=201)
+        else:
+            return HttpResponse(status=400)
+
+
+# class Search(ListView):
+#     paginate_by = 3
+
+#     def get_queryset(self):
+#         return Movie.objects.filter(title__icontains=self.request.GET.get("q"))
+
+#     def get_context_data(self, *args, **kwargs):
+#         context = super().get_context_data(*args, **kwargs)
+#         context["q"] = f'q={self.request.GET.get("q")}&'
+#         return context
